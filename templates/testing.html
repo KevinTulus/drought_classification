@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>KLASIFIKASI BENCANA KEKERINGAN
+            DI JAWA TIMUR MENGGUNAKAN
+            CITRA SATELIT LANDSAT 8
+            DENGAN METODE XGBOOST</h1>
+        <p>Kevin Tulus Ricardo Silitonga<br />
+            NIM - 201402051<br />
+            Program Studi Teknologi Informasi<br />
+            Fakultas Ilmu Komputer dan Teknologi Informasi - USU
+        </p>
+    </div>
+    <div class="hero-image"></div>
+</div>
+
+<!-- Upload Loading Modal -->
+<div class="modal fade" id="uploadLoadingModal" tabindex="-1" aria-labelledby="uploadLoadingModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-body">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p>File sedang diunduh. Mohon tunggu...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-3" id="upload-section">
+    <h1 class="text-center mb-4">Testing Model</h1>
+    <div class="row">
+        <!-- Form Upload Section -->
+        <div class="col-md-4">
+            <h2>Unduh Raster</h2>
+            <form action="/uploadtesting" method="POST" enctype="multipart/form-data" class="mt-3" id="raster_form">
+                <div class="mb-3">
+                    <label for="wrs_path" class="form-label">
+                        <i class="fas fa-calendar-alt me-2"></i> Pilih WRS Path
+                    </label>
+                    <select class="form-control" id="wrs_path" name="wrs_path" required>
+                        <option value="" disabled selected>Pilih WRS Path</option>
+                        <option value="117">117</option>
+                        <option value="118">118</option>
+                        <option value="119">119</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="wrs_row" class="form-label">
+                        <i class="fas fa-calendar-alt me-2"></i> Pilih WRS Row
+                    </label>
+                    <select class="form-control" id="wrs_row" name="wrs_row" required>
+                        <option value="" disabled selected>Pilih WRS Row</option>
+                        <option value="65">65</option>
+                        <option value="66">66</option>
+                    </select>
+                </div>
+
+                <!-- Select input for Month -->
+                <div class="mb-3">
+                    <label for="month" class="form-label">
+                        <i class="fas fa-calendar-alt me-2"></i> Pilih Bulan
+                    </label>
+                    <select class="form-control" id="month" name="month" required>
+                        <option value="" disabled selected>Pilih Bulan</option>
+                        <option value="01">Januari</option>
+                        <option value="02">Febuari</option>
+                        <option value="03">Maret</option>
+                        <option value="04">April</option>
+                        <option value="05">Mei</option>
+                        <option value="06">Juni</option>
+                        <option value="07">Juli</option>
+                        <option value="08">Agustus</option>
+                        <option value="09">September</option>
+                        <option value="10">Oktober</option>
+                        <option value="11">November</option>
+                        <option value="12">Desember</option>
+                    </select>
+                </div>
+
+                <!-- Select input for Year -->
+                <div class="mb-3">
+                    <label for="year" class="form-label">
+                        <i class="fas fa-calendar-alt me-2"></i> Pilih Tahun
+                    </label>
+                    <select class="form-control" id="year" name="year" required>
+                        <option value="" disabled selected>Pilih Tahun</option>
+                        {% for year in range(2014, 2023) %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <button id="uploadButton" type="submit" form="raster_form"
+                        class="btn btn-primary w-100">Unduh</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Upload Guidelines Section -->
+        {% if not show_raster and not get_flashed_messages() %}
+        <div class="col-md-8">
+            <div class="upload-guidelines text-muted">
+                <h3>Informasi</h3>
+                <img src="static/Pembagian_WRS_background.png" class="img-fluid img-thumbnail zoomable small-image"
+                    alt="Pembagian WRS">
+                <p>
+                    Sistem Referensi Dunia (WRS) adalah grid atau jaringan koordinat yang digunakan untuk menentukan
+                    lokasi citra satelit.
+                    Setiap area memiliki kombinasi unik <strong>Path</strong> (lintasan) dan <strong>Row</strong>
+                    (baris) yang mewakili lokasi geografis tertentu.
+                    Gunakan gambar peta Jawa Timur yang telah dibagi berdasarkan WRS untuk memilih lokasi analisis Anda.
+                </p>
+                <ul class="mt-3">
+                    <li>Lihat gambar peta Jawa Timur yang telah dibagi berdasarkan <strong>Path</strong> dan
+                        <strong>Row</strong>.
+                    </li>
+                    <li>Temukan wilayah yang ingin Anda analisis dengan mencocokkan lokasi di peta. Sebagai contoh,
+                        Surabaya terletak di wilayah <strong>118_65</strong>, sehingga Path-nya adalah
+                        <strong>118</strong> dan Row-nya
+                        adalah <strong>65</strong>.
+                    </li>
+                    <li>Tentukan waktu yang akan digunakan untuk analisis, seperti musim tertentu atau periode tertentu.
+                    </li>
+                    <li>Aplikasi akan mengunduh citra Landsat 8 dari Google Earth Engine sesuai dengan
+                        <strong>Path</strong>, <strong>Row</strong>, dan waktu yang Anda pilih.
+                    </li>
+                    <li>Jika citra tidak tersedia (karena tutupan awan tinggi atau faktor lain), coba pilih lokasi atau
+                        waktu yang berbeda.</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+
+        <!-- Raster Images Section -->
+        <div class="col-md-8">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alert-container mt-3">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> <!-- Add an icon for visual enhancement -->
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% if show_raster %}
+            <h2 class="text-center">Gambar Raster</h2>
+            <div class="row">
+                {% for key, value in uploaded_url.items() %}
+                <div class="col-md-4">
+                    <div class="image-container">
+                        <img src="{{ value }}" class="img-fluid img-thumbnail zoomable" alt="Gambar {{ key }}">
+                        <p class="text-center mt-2">Gambar {{ key }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Metadata Table -->
+            <h3 class="text-center">Informasi Metadata</h3>
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th colspan="2">Metadata</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, value in metadata.items() %}
+                        <tr>
+                            <td><strong>{{ key }}</strong></td>
+                            <td>{{ value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal for image zoom -->
+    <div id="image-modal" class="modal" style="display: none;">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modal-img">
+    </div>
+
+    {% if show_raster %}
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-body">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p>Proses klasifikasi sedang berlangsung. Mohon tunggu...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Button Row -->
+    <div class="row mt-4 text-center">
+        <div class="col-md-4">
+            <!-- <button type="submit" form="raster_form" class="btn btn-primary w-100">Upload</button> -->
+        </div>
+        {% if show_raster %}
+        <div class="col-md-4 offset-md-2">
+            <a id="klasifikasiButton" href="/testing" class="btn btn-success w-100">Klasifikasi</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if show_preprocessing %}
+    <!-- Preprocessing Images Section -->
+    <section class="mt-5">
+        <h2 class="text-center">Gambar Preprocessing</h2>
+        <div class="row mb-5">
+            {% for key, value in preprocessing_url.items() %}
+            <div class="col-md-4 mb-4">
+                <div class="image-container text-center">
+                    <img src="{{ value }}" class="img-fluid img-thumbnail zoomable" alt="Gambar {{ key }}">
+                    <p class="text-center mt-2">Gambar {{ key }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Result Images Section -->
+    <section class="mt-5" id="results-section">
+        <h2 class="text-center">Gambar Klasifikasi</h2>
+        <div class="row">
+            {% for key, value in result_url.items() %}
+            <div class="col-md-6 mb-6">
+                <div class="image-container text-center">
+                    <img src="{{ value }}" class="img-fluid img-thumbnail zoomable" alt="Gambar {{ key }}">
+                    <p class="text-center mt-2">Gambar {{ key }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Presentase Section -->
+    <section class="mt-5">
+        <h2 class="text-center">Presentase Kekeringan</h2>
+        <div class="row justify-content-center mt-3">
+            <!-- Percentage Charts in a Single Row -->
+            {% for color, label, value in [
+            ('#8b0000', 'Kekeringan Ekstrem', percentage[0]),
+            ('#ff4500', 'Kekeringan Parah', percentage[1]),
+            ('#ffa500', 'Kekeringan Sedang', percentage[2]),
+            ('#ffff00', 'Kekeringan Ringan', percentage[3]),
+            ('#00ff00', 'Tidak ada Kekeringan', percentage[4])
+            ] %}
+            <div class="col-md-2 percentage-container">
+                <div class="single-chart">
+                    <svg viewBox="0 0 36 36" class="circular-chart" style="--chart-color: {{ color }};">
+                        <path class="circle-bg"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle" stroke-dasharray="{{ value }}, 100"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <text x="18" y="20.35" class="percentage">{{ value }}%</text>
+                    </svg>
+                    <p class="text-center">{{ label }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Result Table Section -->
+    <section class="mt-5">
+        <h2 class="text-center mb-4">Hasil Testing</h2>
+
+        <!-- Display Accuracy -->
+        <div class="text-center mb-3">
+            <p><strong>Accuracy:</strong> {{ accuracy }}</p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs justify-content-center" id="resultTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#report"
+                    type="button" role="tab" aria-controls="report" aria-selected="true">
+                    Classification Report
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="matrix-tab" data-bs-toggle="tab" data-bs-target="#matrix" type="button"
+                    role="tab" aria-controls="matrix" aria-selected="false">
+                    Confusion Matrix
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content mt-4" id="resultTabContent">
+            <!-- Classification Report Tab -->
+            <div class="tab-pane fade show active text-center" id="report" role="tabpanel" aria-labelledby="report-tab">
+                <img src="static/convert/Test_Report.png" class="img-fluid img-thumbnail zoomable"
+                    alt="Classification Report">
+            </div>
+
+            <!-- Confusion Matrix Tab -->
+            <div class="tab-pane fade text-center" id="matrix" role="tabpanel" aria-labelledby="matrix-tab">
+                <img src="static/convert/Test_Matrix.png" class="img-fluid img-thumbnail zoomable small-image"
+                    alt="Confusion Matrix">
+            </div>
+        </div>
+    </section>
+
+    {% endif %}
+</div>
+{% endblock %}

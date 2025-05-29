@@ -1,0 +1,246 @@
+/* General Styling */
+.flex-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.single-chart {
+    width: 100px;
+    text-align: center;
+}
+
+.circular-chart {
+    display: block;
+    margin: 10px auto;
+    max-width: 80px;
+    max-height: 80px;
+}
+
+.circle-bg,
+.circle {
+    fill: none;
+    stroke-width: 3.8;
+}
+
+.circle-bg {
+    stroke: #eee;
+}
+
+.circle {
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    stroke: var(--chart-color, #000);
+    animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
+
+.percentage-container {
+    /* height: 600px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.percentage {
+    fill: #666;
+    font-family: sans-serif;
+    font-size: 0.5em;
+    text-anchor: middle;
+}
+
+.map-container {
+    position: relative;
+}
+
+#map {
+    width: 100%;
+    height: 600px;
+}
+
+.button-container {
+    margin-top: 15px;
+}
+
+.button {
+    padding: 10px 20px;
+    background-color: #fff;
+    border: 2px solid #444;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #f0f0f0;
+}
+
+/* Footer Styling */
+.footer {
+    margin-top: 20px;
+    background-color: #343a40;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.footer p {
+    margin: 0;
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    overflow: auto;
+    padding-top: 20px;
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    margin-top: 20px;
+}
+
+.close,
+.btn-close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    opacity: 0.8;
+}
+
+.close:hover,
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* Hero Section */
+.hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    height: 600px;
+    gap: 30px;
+}
+
+.hero-content {
+    width: 60%;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.hero-content p {
+    font-size: 1.5rem;
+}
+
+.hero-image {
+    width: 450px;
+    height: 450px;
+    background-image: url('hero.jpg');
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        flex-direction: column;
+        padding: 20px;
+        height: auto;
+    }
+
+    .hero-content {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-image {
+        width: 300px;
+        height: 300px;
+        margin-top: 20px;
+    }
+}
+
+/* Info Section */
+.info-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.info-section img {
+    width: 250px;
+    height: auto;
+    margin-right: 2rem;
+}
+
+.info-section h3 {
+    margin-bottom: 0.5rem;
+}
+
+.info-section.reverse {
+    flex-direction: row-reverse;
+}
+
+.info-section.reverse img {
+    margin-left: 2rem;
+    margin-right: 0;
+}
+
+/* Navbar Styling */
+.navbar-brand {
+    font-size: 1.75rem;
+    font-weight: 500;
+}
+
+.navbar-nav .nav-link {
+    font-size: 1.25rem;
+}
+
+/* Alerts */
+.alert-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.alert {
+    font-size: 1rem;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.small-image {
+    max-width: 75%;
+    /* Mengatur ukuran maksimal gambar menjadi 75% dari lebar kontainer */
+    height: auto;
+    /* Memastikan aspek rasio gambar tetap */
+}
